@@ -562,6 +562,7 @@ task api(type: Javadoc) {
 		overview = 'src/api/overview.html'
 		splitIndex = true
 		links(project.ext.javadocLinks)
+		addBooleanOption('Xdoclint:syntax', true) // only check syntax with doclint
 	}
 
 	source subprojects.collect { project ->

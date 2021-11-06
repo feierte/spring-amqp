@@ -1,8 +1,8 @@
 buildscript {
-	ext.kotlinVersion = '1.5.0'
+	ext.kotlinVersion = '1.5.31'
 	repositories {
 		mavenCentral()
-		maven { url 'https://plugins.gradle.org/m2' }
+		gradlePluginPortal()
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 	dependencies {
@@ -49,9 +49,9 @@ ext {
 	hamcrestVersion = '2.2'
 	hibernateValidationVersion = '6.2.0.Final'
 	jacksonBomVersion = '2.13.0'
-	jaywayJsonPathVersion = '2.4.0'
+	jaywayJsonPathVersion = '2.6.0'
 	junit4Version = '4.13.2'
-	junitJupiterVersion = '5.7.2'
+	junitJupiterVersion = '5.8.1'
 	log4jVersion = '2.14.1'
 	logbackVersion = '1.2.3'
 	lz4Version = '1.8.0'
@@ -110,9 +110,9 @@ allprojects {
 ext {
 	expandPlaceholders = '**/quick-tour.xml'
 	javadocLinks = [
-		'https://docs.oracle.com/javase/8/docs/api/',
-		'https://docs.oracle.com/javaee/7/api/',
-		'https://docs.spring.io/spring/docs/current/javadoc-api/'
+		'https://docs.oracle.com/en/java/javase/17/docs/api/',
+		'https://jakarta.ee/specifications/platform/9/apidocs/',
+		'https://docs.spring.io/spring-framework/docs/current/javadoc-api/'
 	] as String[]
 }
 
@@ -243,6 +243,11 @@ subprojects { subproject ->
 
 	tasks.withType(JavaForkOptions) {
 		jvmArgs '--add-opens', 'java.base/java.util.zip=ALL-UNNAMED'
+	}
+
+	tasks.withType(Javadoc) {
+		options.addBooleanOption('Xdoclint:syntax', true) // only check syntax with doclint
+		options.addBooleanOption('Werror', true) // fail build on Javadoc warnings
 	}
 
 	test {
@@ -473,6 +478,7 @@ task prepareAsciidocBuild(type: Sync) {
 	from {
 		configurations.docs.collect { zipTree(it) }
 	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	from 'src/reference/asciidoc/'
 	into "$buildDir/asciidoc"
 }
@@ -547,13 +553,16 @@ task api(type: Javadoc) {
 	group = 'Documentation'
 	description = 'Generates aggregated Javadoc API documentation.'
 	title = "${rootProject.description} ${version} API"
-	options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
-	options.author = true
-	options.header = rootProject.description
-	options.overview = 'src/api/overview.html'
-	options.stylesheetFile = file('src/api/stylesheet.css')
-	options.links(rootProject.ext.javadocLinks)
-	options.addStringOption('Xdoclint:none', '-quiet')
+	options {
+		encoding = 'UTF-8'
+		memberLevel = JavadocMemberLevel.PROTECTED
+		author = true
+		header = rootProject.description
+		use = true
+		overview = 'src/api/overview.html'
+		splitIndex = true
+		links(project.ext.javadocLinks)
+	}
 
 	source subprojects.collect { project ->
 		project.sourceSets.main.allJava

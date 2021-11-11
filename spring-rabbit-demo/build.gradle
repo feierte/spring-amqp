@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+group 'org.springframework.amqp'
+version '2.3.12-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    compile(project(":spring-amqp"))
+    compile(project(":spring-rabbit"))
+}
+
+test {
+    useJUnitPlatform()
+}
